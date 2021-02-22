@@ -1,26 +1,35 @@
 import cv2
 import numpy as np
-import os
-from os.path import join
+import copy
 
-kernel_1d = cv2.getGaussianKernel(ksize=7, sigma=0.84089642, ktype=cv2.CV_32F)
-kernel_2d = kernel_1d * kernel_1d.T
-print(kernel_2d)
 
+# 读取图片
 image = cv2.imread('images/lena.bmp', 0)
 cv2.imshow('original', image)
 
+# 初始化参数
 rows, cols = image.shape
-m, n = kernel_2d.shape
-radium_m = (m-1)//2
-radium_n = (n-1)//2
-result = np.zeros(image.shape)
+sigma = 0.84089642
+kernel_size = np.int(np.round(sigma*3)*2+1)  # 一般高斯核尺寸通过计算得到：6*sigma+1 要保证尺寸的宽度和高度都为奇数
+radium = kernel_size//2
 
-for i in range(radium_m, rows-radium_m, 1):
-    for j in range(radium_n, rows-radium_n, 1):
-        result[i, j] = (image[i-radium_m:i+radium_m+1, j-radium_n:j+radium_n+1] * kernel_2d).sum()
+# 通过函数 cv2.GaussianBlur 进行滤波处理(模糊处理)
+result1 = cv2.GaussianBlur(image, ksize=(kernel_size, kernel_size), sigmaX=sigma)
+cv2.imshow('result1', result1)
 
-result = np.uint8(result)
-cv2.imshow('result', result)
+# 生成高斯核
+kernel_1d = cv2.getGaussianKernel(ksize=kernel_size, sigma=sigma, ktype=cv2.CV_32F)
+kernel_2d = kernel_1d * kernel_1d.T
+# print(kernel_2d)
+
+# 边缘保留原图想的像素值
+result2 = copy.deepcopy(image)
+for i in range(radium, rows-radium, 1):
+    for j in range(radium, rows-radium, 1):
+        result2[i, j] = (image[i-radium:i+radium+1, j-radium:j+radium+1] * kernel_2d).sum()
+result2 = np.uint8(result2)
+
+cv2.imshow('result2', result2)
 cv2.waitKey()
 cv2.destroyAllWindows()
+
