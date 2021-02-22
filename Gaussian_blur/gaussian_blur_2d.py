@@ -5,7 +5,7 @@ from os.path import join
 
 kernel_1d = cv2.getGaussianKernel(ksize=7, sigma=0.84089642, ktype=cv2.CV_32F)
 kernel_2d = kernel_1d * kernel_1d.T
-print(kernel_2d.shape)
+print(kernel_2d)
 
 image = cv2.imread('images/lena.bmp', 0)
 cv2.imshow('original', image)
